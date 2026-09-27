@@ -1,0 +1,40 @@
+html, body {
+  margin: 0; padding: 0; height: 100%; overflow: hidden;
+  background: #06020c;
+}
+canvas { display: block; touch-action: none; cursor: grab; }
+canvas:active { cursor: grabbing; }
+
+#hint {
+  position: fixed; top: 20px; left: 0; right: 0;
+  text-align: center;
+  font-family: "Trebuchet MS", system-ui, sans-serif;
+  font-size: 14px; letter-spacing: 0.09em;
+  color: rgba(255, 205, 225, 0.78);
+  text-shadow: 0 0 14px rgba(255, 80, 140, 0.8);
+  pointer-events: none; user-select: none;
+  transition: opacity 0.8s ease;
+}
+#hint.hide { opacity: 0; }
+
+#found {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  padding-bottom: 7vh;
+  pointer-events: none; opacity: 0;   /* la opacidad la controla js/interaction/game.js */
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  user-select: none;
+}
+#found .big {
+  font-size: clamp(20px, 4vw, 44px);
+  color: #fff;
+  text-shadow: 0 0 26px rgba(255, 80, 150, 1), 0 0 70px rgba(255, 60, 130, 0.65);
+}
+#found .sub {
+  margin-top: 10px;
+  font-size: clamp(15px, 2.6vw, 28px);
+  color: #ffc9dd; letter-spacing: 0.32em;
+  text-shadow: 0 0 22px rgba(255, 90, 160, 0.9);
+}
