@@ -3,23 +3,50 @@ import { clamp } from '../utils/math.js';
 const DRAG_K = 0.0045;
 const PITCH_LIMIT = 1.15;
 
-/* Arrastre con inercia (gira "world") y rueda (zoom de cámara). */
-export function createControls({ canvas, world, zoom }) {
+/* Arrastre con inercia (gira "world"), rueda y pellizco (zoom de cámara). */
+export function createControls({ canvas, world, zoom, zoomBy }) {
   let yaw = 0, pitch = 0;
   let velYaw = 0, velPitch = 0;
   let dragging = false;
   let prevX = 0, prevY = 0;
 
+  const pointers = new Map(); // pointerId -> {x, y}, para detectar el pellizco
+  let pinchDist = 0;
+
+  function pinchDistance() {
+    const [a, b] = [...pointers.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
   canvas.addEventListener('pointerdown', (e) => {
-    dragging = true;
-    prevX = e.clientX;
-    prevY = e.clientY;
-    velYaw = 0;
-    velPitch = 0;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     canvas.setPointerCapture(e.pointerId);
+
+    if (pointers.size === 2) {
+      dragging = false;
+      velYaw = 0;
+      velPitch = 0;
+      pinchDist = pinchDistance();
+    } else if (pointers.size === 1) {
+      dragging = true;
+      prevX = e.clientX;
+      prevY = e.clientY;
+      velYaw = 0;
+      velPitch = 0;
+    }
   });
 
   canvas.addEventListener('pointermove', (e) => {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size === 2) {
+      const dist = pinchDistance();
+      if (pinchDist > 0) zoomBy(pinchDist / dist);
+      pinchDist = dist;
+      return;
+    }
+
     if (!dragging) return;
     const dx = e.clientX - prevX;
     const dy = e.clientY - prevY;
@@ -37,10 +64,22 @@ export function createControls({ canvas, world, zoom }) {
   });
 
   function endDrag(e) {
-    if (!dragging) return;
-    dragging = false;
-    if (e && e.pointerId !== undefined && canvas.hasPointerCapture?.(e.pointerId)) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.delete(e.pointerId);
+    if (canvas.hasPointerCapture?.(e.pointerId)) {
       canvas.releasePointerCapture(e.pointerId);
+    }
+
+    if (pointers.size === 1) {
+      // queda un dedo: retoma el arrastre desde su posición actual
+      const [p] = pointers.values();
+      dragging = true;
+      prevX = p.x;
+      prevY = p.y;
+      velYaw = 0;
+      velPitch = 0;
+    } else {
+      dragging = false;
     }
   }
   canvas.addEventListener('pointerup', endDrag);

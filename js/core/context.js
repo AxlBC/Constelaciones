@@ -18,7 +18,7 @@ export function createContext(canvas) {
   const CAM_DIR = new THREE.Vector3(0, 38, 185).normalize();
   let camDist = Math.sqrt(38 * 38 + 185 * 185);
   const CAM_MIN = 55;
-  const CAM_MAX = 520;
+  const CAM_MAX = 720;
 
   function applyCamera() {
     camera.position.copy(CAM_DIR).multiplyScalar(camDist);
@@ -27,16 +27,20 @@ export function createContext(canvas) {
   }
   applyCamera();
 
-  /* dir > 0 aleja, dir < 0 acerca */
-  function zoom(dir) {
-    camDist *= (1 + dir * 0.09);
-    camDist = clamp(camDist, CAM_MIN, CAM_MAX);
+  /* factor > 1 aleja, factor < 1 acerca */
+  function zoomBy(factor) {
+    camDist = clamp(camDist * factor, CAM_MIN, CAM_MAX);
     applyCamera();
+  }
+
+  /* dir > 0 aleja, dir < 0 acerca (paso fijo, usado por la rueda) */
+  function zoom(dir) {
+    zoomBy(1 + dir * 0.09);
   }
 
   const world = new THREE.Group();
   world.rotation.order = 'YXZ';
   scene.add(world);
 
-  return { canvas, renderer, scene, camera, world, applyCamera, zoom };
+  return { canvas, renderer, scene, camera, world, applyCamera, zoom, zoomBy };
 }

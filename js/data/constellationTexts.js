@@ -4,5 +4,8 @@ export const constellationTexts = [
   'Abril <3',
   'Te quiero',
   'Mi guapa', 
-  '¡¡Muchacha!!'
+  '¡¡Muchacha!!', 
+  '¡¡Brizeyka!!', 
+  'Muaa', 
+  '¡¡Te amo!!'
 ];
